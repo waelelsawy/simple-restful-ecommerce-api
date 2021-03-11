@@ -13,10 +13,6 @@ class Order extends Model
 
     protected $with = ['items'];
 
-    // protected $casts = [
-    //     'user_id' => 'int'
-    // ];
-
     public function items()
     {
         return $this->hasMany(OrderItem::class);

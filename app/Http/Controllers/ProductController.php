@@ -14,7 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::all();
+        return Product::with('inventory')->get();
     }
 
     /**
@@ -39,7 +39,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return $product;
+        return $product->load('inventory');
     }
 
     /**

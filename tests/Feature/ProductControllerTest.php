@@ -10,21 +10,27 @@ class ProductControllerTest extends TestCase
     /** @test */
     public function it_lists_all_products()
     {
-        $products = Product::factory(5)->create();
+        Product::factory(5)->create();
 
         $response = $this->getJson('/api/products');
 
-        $this->assertEquals($response->json(), $products->toArray());
+        $this->assertEquals(
+            $response->json(),
+            Product::with('inventory')->get()->toArray()
+        );
     }
 
     /** @test */
     public function it_lists_a_single_product()
     {
-        $products = Product::factory(5)->create();
+        Product::factory(5)->create();
 
         $response = $this->getJson('/api/products/2');
 
-        $this->assertEquals($response->json(), Product::find(2)->toArray());
+        $this->assertEquals(
+            $response->json(),
+            Product::with('inventory')->find(2)->toArray()
+        );
     }
 
     /** @test */

@@ -16,10 +16,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        User::factory(10)->create();
+        $user = User::factory()->create([
+            'name' => 'Wael',
+            'email' => 'wael@email.com',
+            'password' => bcrypt('1234')
+        ]);
 
-        Product::factory(20)->create();
+        User::factory(2)->create();
 
-        Order::factory(5)->hasItems(3)->create();
+        Product::factory(2)->create();
+
+        Order::factory(5)->hasItems(3)->create(['user_id' => $user->id]);
     }
 }
