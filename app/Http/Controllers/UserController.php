@@ -25,13 +25,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        User::create([
+        $request->validate([
+            'name' => 'required|string|min:2|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:4|confirmed'
+        ]);
+
+        return User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password)
         ]);
-
-        return response([], 200);
     }
 
     /**
@@ -54,9 +58,12 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
-        $user->update($request->all());
+        $validated = $request->validate([
+            'name' => 'sometimes|required|string|min:2|max:255',
+            'email' => 'sometimes|required|email|unique:users,email',
+        ]);
 
-        return response([], 200);
+        return tap($user)->update($validated);
     }
 
     /**

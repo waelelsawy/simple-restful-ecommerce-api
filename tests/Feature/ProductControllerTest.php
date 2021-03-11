@@ -38,10 +38,10 @@ class ProductControllerTest extends TestCase
     {
         $product = Product::factory()->make(['count' => 10]);
 
-        $this->postJson('/api/products', $product->toArray());
+        $response = $this->postJson('/api/products', $product->toArray());
 
         $this->assertDatabaseCount('products', 1);
-        $this->assertEquals(Product::first()->inventory->count, 10);
+        $this->assertEquals($response->json()['inventory']['count'], 10);
     }
 
     /** @test */
@@ -49,15 +49,13 @@ class ProductControllerTest extends TestCase
     {
         $product = Product::factory()->create();
 
-        $this->putJson("/api/products/{$product->id}", [
+        $data = $this->putJson("/api/products/{$product->id}", [
             'price' => 2499,
             'count' => 4,
-        ]);
+        ])->json();
 
-        $product->refresh();
-
-        $this->assertEquals($product->price, 2499);
-        $this->assertEquals($product->inventory->count, 4);
+        $this->assertEquals($data['price'], 2499);
+        $this->assertEquals($data['inventory']['count'], 4);
     }
 
     /** @test */

@@ -30,9 +30,13 @@ class UserControllerTest extends TestCase
     /** @test */
     public function it_stores_a_new_user()
     {
-        $user = User::factory()->unverified()->make();
+        $user = User::factory()->make();
+        $payload = $user->toArray() + [
+            'password' => '1234',
+            'password_confirmation' => '1234'
+        ];
 
-        $this->postJson('/api/users', $user->toArray());
+        $this->postJson('/api/users', $payload);
 
         $this->assertDatabaseCount('users', 1);
         $this->assertDatabaseHas('users', ['id' => 1]);
@@ -43,9 +47,11 @@ class UserControllerTest extends TestCase
     {
         $user = User::factory()->create();
 
-        $this->putJson("/api/users/{$user->id}", ['name' => 'New Name']);
+        $response = $this->putJson("/api/users/{$user->id}", [
+            'name' => 'New Name'
+        ]);
 
-        $this->assertSame($user->fresh()->name, 'New Name');
+        $this->assertSame($response->json()['name'], 'New Name');
     }
 
     /** @test */

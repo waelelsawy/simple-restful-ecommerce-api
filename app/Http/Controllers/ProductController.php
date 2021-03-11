@@ -14,7 +14,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::with('inventory')->get();
+        return Product::all();
     }
 
     /**
@@ -25,10 +25,15 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        $product = Product::create($request->all());
+        $validated = $request->validate([
+            'title' => 'required|string|min:2|max:255',
+            'price' => 'required|integer',
+        ]);
+
+        $product = Product::create($validated);
         $product->inventory()->create(['count' => $request->count]);
 
-        return response([], 200);
+        return $product->fresh();
     }
 
     /**
@@ -39,7 +44,7 @@ class ProductController extends Controller
      */
     public function show(Product $product)
     {
-        return $product->load('inventory');
+        return $product;
     }
 
     /**
@@ -54,7 +59,7 @@ class ProductController extends Controller
         $product->update($request->all());
         $product->inventory()->update(['count' => $request->count]);
 
-        return response([], 200);
+        return $product->fresh();
     }
 
     /**

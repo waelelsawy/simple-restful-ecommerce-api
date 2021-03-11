@@ -31,7 +31,7 @@ class OrderController extends Controller
             $product = Product::find($orderItem['product_id']);
 
             if ($product->inventory->count < $orderItem['quantity']) {
-                return response(['message' => 'error'], 403);
+                return response(['message' => 'error'], 422);
             }
         }
 
@@ -43,7 +43,7 @@ class OrderController extends Controller
         $order = Order::create(['user_id' => $request->user_id]);
         $order->items()->createMany($request->items);
 
-        return response([], 200);
+        return $order->fresh();
     }
 
     /**
@@ -85,7 +85,7 @@ class OrderController extends Controller
             $order->items()->delete();
             $order->items()->createMany($request->items);
 
-            return response([], 200);
+            return $order->fresh();
         }
 
         return response(['message' => 'Order not found'], 404);

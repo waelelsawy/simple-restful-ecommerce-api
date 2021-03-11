@@ -71,7 +71,7 @@ class OrderControllerTest extends TestCase
         ]);
 
         $response = $this->postJson('/api/orders', $order->toArray());
-        $response->assertStatus(403);
+        $response->assertStatus(422);
 
         $this->assertEquals($products[0]->inventory->count, 2);
         $this->assertEquals($products[1]->inventory->count, 2);
@@ -80,17 +80,17 @@ class OrderControllerTest extends TestCase
     /** @test */
     public function it_stores_a_new_order()
     {
-        $this->withoutExceptionHandling();
-
         $products = Product::factory(2)->create();
         $order = Order::factory()->make([
-            'items' => $products->map(function ($p) {
-                return ['product_id' => $p->id, 'quantity' => 1];
-            })->toArray()
+            'items' => [
+                ['product_id' => 1, 'quantity' => 1],
+                ['product_id' => 2, 'quantity' => 1],
+            ]
         ]);
 
-        $this->postJson('/api/orders', $order->toArray());
+        $response = $this->postJson('/api/orders', $order->toArray());
 
+        $this->assertEquals($response->json(), Order::first()->toArray());
         $this->assertEquals($products[0]->inventory->count, 1);
 
         $this->assertDatabaseCount('orders', 1);
@@ -116,10 +116,11 @@ class OrderControllerTest extends TestCase
         $order = Order::factory()->hasItems(2)->create();
         $orderItems = OrderItem::factory(2)->make(['order_id' => $order->id]);
 
-        $this->putJson("/api/orders/{$order->id}?user_id=1", [
+        $response = $this->putJson("/api/orders/{$order->id}?user_id=1", [
             'items' => $order->items->concat($orderItems->toArray())->toArray()
         ]);
 
+        $this->assertEquals($response->json(), Order::first()->toArray());
         $this->assertDatabaseCount('order_items', 4);
     }
 

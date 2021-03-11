@@ -18,6 +18,8 @@ class Product extends Model
 
     protected $hidden = ['created_at', 'updated_at'];
 
+    protected $with = ['inventory'];
+
     /**
      * The attributes that should be cast to native types.
      *
