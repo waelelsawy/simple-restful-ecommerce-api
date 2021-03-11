@@ -16,7 +16,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        return Order::whereUserId($request->user_id)->get();
+        return $request->user()->orders()->get();
     }
 
     /**
@@ -49,69 +49,46 @@ class OrderController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $orderId
+     * @param  \App\Models\Order $order
      * @return \Illuminate\Http\Response
      */
-    public function show(Request $request, int $orderId)
+    public function show(Order $order)
     {
-        $attributes = [
-            'id' => $orderId,
-            'user_id' => $request->user_id
-        ];
+        $this->authorize('update-order', $order);
 
-        if ($order = Order::where($attributes)->first()) {
-            return $order;
-        }
-
-        return response(['message' => 'Order not found'], 404);
+        return $order;
     }
 
     /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \int  $orderId
+     * @param  \App\Models\Order $order
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, int $orderId)
+    public function update(Request $request, Order $order)
     {
-        $attributes = [
-            'id' => $orderId,
-            'user_id' => $request->user_id
-        ];
+        $this->authorize('update-order', $order);
 
-        if ($order = Order::where($attributes)->first()) {
-            $order->items()->delete();
-            $order->items()->createMany($request->items);
+        $order->items()->delete();
+        $order->items()->createMany($request->items);
 
-            return $order->fresh();
-        }
-
-        return response(['message' => 'Order not found'], 404);
+        return $order->fresh();
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \int  $orderId
+     * @param  \App\Models\Order $order
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request, int $orderId)
+    public function destroy(Order $order)
     {
-        $attributes = [
-            'id' => $orderId,
-            'user_id' => $request->user_id
-        ];
+        $this->authorize('update-order', $order);
 
-        if ($order = Order::where($attributes)->first()) {
-            $order->items()->delete();
-            $order->delete();
+        $order->items()->delete();
+        $order->delete();
 
-            return response([], 200);
-        }
-
-        return response(['message' => 'Order not found'], 404);
+        return response([], 200);
     }
 }
