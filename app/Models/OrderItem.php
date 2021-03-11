@@ -11,6 +11,8 @@ class OrderItem extends Model
 
     protected $fillable = ['product_id', 'quantity'];
 
+    protected $hidden = ['created_at', 'updated_at'];
+
     protected $with = ['product'];
 
     public function product()

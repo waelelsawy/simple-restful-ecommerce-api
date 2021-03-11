@@ -11,6 +11,8 @@ class Order extends Model
 
     protected $fillable = ['user_id'];
 
+    protected $hidden = ['created_at', 'updated_at'];
+
     protected $with = ['items'];
 
     public function items()

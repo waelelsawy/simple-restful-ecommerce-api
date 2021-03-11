@@ -16,6 +16,8 @@ class Product extends Model
      */
     protected $fillable = ['title', 'price'];
 
+    protected $hidden = ['created_at', 'updated_at'];
+
     /**
      * The attributes that should be cast to native types.
      *

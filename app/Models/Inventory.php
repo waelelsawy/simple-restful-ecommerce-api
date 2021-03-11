@@ -10,4 +10,6 @@ class Inventory extends Model
     use HasFactory;
 
     protected $fillable = ['product_id', 'count'];
+
+    protected $hidden = ['created_at', 'updated_at'];
 }
