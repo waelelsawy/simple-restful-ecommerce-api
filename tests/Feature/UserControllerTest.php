@@ -20,7 +20,7 @@ class UserControllerTest extends TestCase
     /** @test */
     public function it_lists_a_single_user()
     {
-        $users = User::factory(5)->create();
+        User::factory(5)->create();
 
         $response = $this->getJson('/api/users/2');
 
