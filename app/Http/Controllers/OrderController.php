@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\Product;
+use App\Models\OrderItem;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -27,21 +27,24 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        foreach ($request->items as $orderItem) {
-            $product = Product::find($orderItem['product_id']);
+        $orderItems = collect($request->items)
+            ->map(function ($item) {
+                return new OrderItem($item);
+            })
+            ->filter(function ($item) {
+                return $item->product->inventory->count >= $item->quantity;
+            });
 
-            if ($product->inventory->count < $orderItem['quantity']) {
-                return response(['message' => 'error'], 422);
-            }
+        if ($orderItems->count() < count($request->items)) {
+            return response(['message' => 'error'], 422);
         }
 
-        foreach ($request->items as $orderItem) {
-            $product = Product::find($orderItem['product_id']);
-            $product->inventory()->decrement('count', $orderItem['quantity']);
-        }
+        $orderItems->each(function ($item) {
+            $item->product->inventory()->decrement('count', $item->quantity);
+        });
 
         $order = Order::create(['user_id' => $request->user_id]);
-        $order->items()->createMany($request->items);
+        $order->items()->saveMany($orderItems);
 
         return $order->fresh();
     }
