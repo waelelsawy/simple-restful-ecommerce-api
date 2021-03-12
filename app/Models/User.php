@@ -34,6 +34,11 @@ class User extends Authenticatable
         'updated_at'
     ];
 
+    /**
+     * Get the orders for the user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function orders()
     {
         return $this->hasMany(Order::class);

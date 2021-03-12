@@ -16,8 +16,18 @@ class Product extends Model
      */
     protected $fillable = ['title', 'price'];
 
+    /**
+     * The attributes that should be hidden for arrays.
+     *
+     * @var array
+     */
     protected $hidden = ['created_at', 'updated_at'];
 
+    /**
+     * The relations to eager load on every query.
+     *
+     * @var array
+     */
     protected $with = ['inventory'];
 
     /**
@@ -29,6 +39,11 @@ class Product extends Model
         'price' => 'int'
     ];
 
+    /**
+     * Get the inventory for the product.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function inventory()
     {
         return $this->hasOne(Inventory::class);
