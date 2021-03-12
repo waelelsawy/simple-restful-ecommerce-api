@@ -36,7 +36,9 @@ class OrderController extends Controller
             });
 
         if ($orderItems->count() < count($request->items)) {
-            return response(['message' => 'error'], 422);
+            return response([
+                'error' => 'Invalid order, not enough inventory'
+            ], 422);
         }
 
         $orderItems->each(function ($item) {
