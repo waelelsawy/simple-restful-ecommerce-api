@@ -33,7 +33,7 @@ class OrderControllerTest extends TestCase
     /** @test */
     public function it_does_not_list_an_order_for_an_invalid_user()
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
 
         Order::factory(2)->hasItems(2)->create();
 
@@ -61,11 +61,10 @@ class OrderControllerTest extends TestCase
     /** @test */
     public function it_rejects_a_new_order_if_an_inventory_isnt_enough()
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
 
         $products = Product::factory(4)->create();
         $order = Order::factory()->make([
-            'user_id' => $user->id,
             'items' => [
                 ['product_id' => 1, 'quantity' => 1],
                 ['product_id' => 2, 'quantity' => 4],
@@ -82,11 +81,10 @@ class OrderControllerTest extends TestCase
     /** @test */
     public function it_stores_a_new_order()
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
 
         $products = Product::factory(2)->create();
         $order = Order::factory()->make([
-            'user_id' => $user->id,
             'items' => [
                 ['product_id' => 1, 'quantity' => 1],
                 ['product_id' => 2, 'quantity' => 1],
@@ -105,7 +103,7 @@ class OrderControllerTest extends TestCase
     /** @test */
     public function it_does_not_update_an_order_for_an_invalid_user()
     {
-        Sanctum::actingAs($user = User::factory()->create());
+        Sanctum::actingAs(User::factory()->create());
 
         $order = Order::factory()->hasItems(2)->create();
         $orderItem = OrderItem::factory()->make(['order_id' => $order->id]);
@@ -152,7 +150,7 @@ class OrderControllerTest extends TestCase
     {
         Sanctum::actingAs($user = User::factory()->create());
 
-        $order = Order::factory()
+        Order::factory()
             ->hasItems(2)
             ->create(['user_id' => $user->id]);
 

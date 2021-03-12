@@ -28,6 +28,7 @@ class ProductController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|min:2|max:255',
             'price' => 'required|integer',
+            'count' => 'required|integer'
         ]);
 
         $product = Product::create($validated);
@@ -56,8 +57,17 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        $product->update($request->all());
-        $product->inventory()->update(['count' => $request->count]);
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|min:2|max:255',
+            'price' => 'sometimes|required|integer',
+            'count' => 'sometimes|required|integer'
+        ]);
+
+        $product->update($validated);
+
+        if ($request->has('count')) {
+            $product->inventory()->update(['count' => $request->count]);
+        }
 
         return $product->fresh();
     }

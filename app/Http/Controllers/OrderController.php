@@ -45,7 +45,7 @@ class OrderController extends Controller
             $item->product->inventory()->decrement('count', $item->quantity);
         });
 
-        $order = Order::create(['user_id' => $request->user_id]);
+        $order = $request->user()->orders()->create();
         $order->items()->saveMany($orderItems);
 
         return $order->fresh();
