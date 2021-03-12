@@ -12,6 +12,12 @@ $ php -S localhost:8000
 $ php artisan serve
 ```
 
+To run tests
+
+```bash
+$ php artisan test
+```
+
 Once the server is up and running, you can migrate tables and generate fake data by running
 
 ```bash
