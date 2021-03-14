@@ -30,6 +30,17 @@ class OrderItem extends Model
      */
     protected $with = ['product'];
 
+    public static function booted()
+    {
+        static::saved(function ($item) {
+            $item->product->inventory()->decrement('count', $item->quantity);
+        });
+
+        static::deleting(function ($item) {
+            $item->product->inventory()->increment('count', $item->quantity);
+        });
+    }
+
     /**
      * Get the product without it's inventory that owns the order item.
      *

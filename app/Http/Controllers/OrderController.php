@@ -3,11 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
-use App\Models\OrderItem;
+use App\Rules\InStock;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
+    /**
+     * The validation rules.
+     *
+     * @var array
+     */
+    protected $rules;
+
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->rules = [
+            'items' => 'required|array',
+            'items.*.product_id' => 'required|integer|min:1|exists:products,id',
+            'items.*.quantity' => ['required', 'integer', 'min:1', new InStock]
+        ];
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -27,26 +48,10 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $orderItems = collect($request->items)
-            ->map(function ($item) {
-                return new OrderItem($item);
-            })
-            ->filter(function ($item) {
-                return $item->product->inventory->count >= $item->quantity;
-            });
-
-        if ($orderItems->count() < count($request->items)) {
-            return response([
-                'error' => 'Invalid order, not enough inventory'
-            ], 422);
-        }
-
-        $orderItems->each(function ($item) {
-            $item->product->inventory()->decrement('count', $item->quantity);
-        });
+        $validated = $request->validate($this->rules);
 
         $order = $request->user()->orders()->create();
-        $order->items()->saveMany($orderItems);
+        $order->items()->createMany($validated['items']);
 
         return $order->fresh();
     }
@@ -75,8 +80,10 @@ class OrderController extends Controller
     {
         $this->authorize('update-order', $order);
 
-        $order->items()->delete();
-        $order->items()->createMany($request->items);
+        $validated = $request->validate($this->rules);
+
+        $order->items->each->delete();
+        $order->items()->createMany($validated['items']);
 
         return $order->fresh();
     }
@@ -91,7 +98,7 @@ class OrderController extends Controller
     {
         $this->authorize('update-order', $order);
 
-        $order->items()->delete();
+        $order->items->each->delete();
         $order->delete();
 
         return response([], 200);

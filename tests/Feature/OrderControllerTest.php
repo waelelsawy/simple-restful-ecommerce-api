@@ -116,7 +116,7 @@ class OrderControllerTest extends TestCase
     }
 
     /** @test */
-    public function it_updates_an_existing_order()
+    public function it_rejects_updating_an_order_if_an_inventory_isnt_enough()
     {
         Sanctum::actingAs($user = User::factory()->create());
 
@@ -124,13 +124,39 @@ class OrderControllerTest extends TestCase
             ->hasItems(2)
             ->create(['user_id' => $user->id]);
 
-        $orderItems = OrderItem::factory(2)->make(['order_id' => $order->id]);
-
-        $response = $this->putJson('/api/orders/1', [
-            'items' => $order->items->concat($orderItems->toArray())->toArray()
+        $orderItems = OrderItem::factory(2)->make([
+            'order_id' => $order->id,
+            'quantity' => 5
         ]);
 
+        $data = $order->items->concat($orderItems->toArray())->toArray();
+
+        $response = $this->putJson('/api/orders/1', ['items' => $data]);
+        $response->assertStatus(422);
+    }
+
+    /** @test */
+    public function it_updates_an_existing_order()
+    {
+        Sanctum::actingAs($user = User::factory()->create());
+
+        $order = Order::factory()->create(['user_id' => $user->id]);
+
+        $oldItems = OrderItem::factory(2)->create([
+            'order_id' => $order->id,
+            'quantity' => 2
+        ]);
+
+        $newItems = OrderItem::factory(2)->make(['order_id' => $order->id]);
+
+        $data = $oldItems->concat($newItems->toArray())->toArray();
+        $data[1]['quantity'] = 1;
+
+        $response = $this->putJson('/api/orders/1', ['items' => $data]);
+
         $this->assertEquals($response->json(), Order::first()->toArray());
+        $this->assertEquals($oldItems[1]->product->inventory->count, 1);
+
         $this->assertDatabaseCount('order_items', 4);
     }
 
@@ -150,11 +176,15 @@ class OrderControllerTest extends TestCase
     {
         Sanctum::actingAs($user = User::factory()->create());
 
-        Order::factory()
+        $order = Order::factory()
             ->hasItems(2)
             ->create(['user_id' => $user->id]);
 
+        $order->load('items');
+
         $this->deleteJson('/api/orders/1');
+
+        $this->assertEquals(2, $order->items[0]->product->inventory->count);
 
         $this->assertDatabaseCount('order_items', 0);
         $this->assertDatabaseCount('orders', 0);
